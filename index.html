@@ -53,8 +53,6 @@
       return weekdays;
     }
 
-
-
     function noDaysOff(month, weekDays) {
       return `No days off in ${month} (worked ${weekDays} business days or ${weekDays * 8} hours)`
     }
@@ -86,7 +84,7 @@
         daysOff.textContent = "Days off in " + month + ": " + self.selectedDates.map(function (day) {
           const d = day.split("-")[2]
           return d[0] === '0' ? d[1] : d;
-        }).join(", ") + " (worked " + selectedDays + "/" + weekDays + " days or " + (8 * (weekDays - selectedDays)) + " )"
+        }).join(", ") + " (worked " + selectedDays + "/" + weekDays + " days or " + (8 * (weekDays - selectedDays)) + " hours)"
       }
 
       const options = {
