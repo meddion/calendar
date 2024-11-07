@@ -1,0 +1,128 @@
+<html>
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/build/vanilla-calendar.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/build/vanilla-calendar.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+  <script>
+    const monthMap = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+
+    function exportPDF() {
+      const exportButton = document.querySelector("#export-button");
+      exportButton.style.display = 'none'; // Hide the export button
+
+      const element = document.body;
+      html2pdf().from(element).save().then(() => {
+        exportButton.style.display = 'block'; // Show the export button again
+      });
+    }
+
+    function getWeekdays(year, month) {
+      function isWeekday(year, month, day) {
+        var day = new Date(year, month, day).getDay();
+        return day != 0 && day != 6;
+      }
+
+      function getDaysInMonth(year, month) {
+        return new Date(year, month, 0).getDate();
+      }
+
+      var days = getDaysInMonth(year, month);
+      var weekdays = 0;
+      for (var i = 0; i < days; i++) {
+        if (isWeekday(year, month, i + 1))
+          weekdays++;
+      }
+
+      return weekdays;
+    }
+
+
+
+    function noDaysOff(month, weekDays) {
+      return `No days off in ${month} (worked ${weekDays} business days or ${weekDays * 8} hours)`
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const d = new Date();
+      let month = monthMap[d.getMonth()]
+      const weekDays = getWeekdays(d.getFullYear(), d.getMonth())
+
+      const daysOff = document.querySelector("#days-off")
+      daysOff.textContent = noDaysOff(month, weekDays)
+
+
+      function handleAnyAction(event, self) {
+        const calendarMonth = monthMap[self.selectedMonth]
+        const weekDays = getWeekdays(self.selectedYear, self.selectedMonth)
+        if (month !== calendarMonth) {
+          month = calendarMonth
+        }
+
+        const selectedDays = self.selectedDates.length
+
+        if (selectedDays === 0) {
+          daysOff.textContent = noDaysOff(month, weekDays)
+          return
+        }
+
+
+        daysOff.textContent = "Days off in " + month + ": " + self.selectedDates.map(function (day) {
+          const d = day.split("-")[2]
+          return d[0] === '0' ? d[1] : d;
+        }).join(", ") + " (worked " + selectedDays + "/" + weekDays + " days or " + (8 * (weekDays - selectedDays)) + " )"
+      }
+
+      const options = {
+        settings: {
+          selection: {
+            day: 'multiple',
+          },
+          range: {
+            disableWeekday: [0, 6],
+          }
+        },
+        actions: {
+          clickDay: handleAnyAction,
+          clickArrow(event, self) {
+            self.selectedDates = []
+            handleAnyAction(event, self)
+          },
+        }
+      };
+
+      const calendar = new VanillaCalendar('#calendar', options);
+      calendar.init();
+    });
+  </script>
+  <h2>My working days</h2>
+  <div id="calendar"></div>
+  <div id="days-off">
+  </div>
+  <br />
+  <button id="export-button" onclick="exportPDF()">Export in PDF</button>
+  <style>
+    #calendar {
+      width: 500px;
+      height: 400px;
+    }
+  </style>
+</body>
+
+</html>
